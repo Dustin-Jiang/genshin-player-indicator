@@ -22,9 +22,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: action-yarn
-      uses: comchangs/action-yarn@v0.1-beta
-
     - name: Build
       run: | 
         yarn install
