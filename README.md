@@ -22,6 +22,6 @@ Give Bilibili users who **might be** a `Genshin Impact` player an indicator for 
 
 This project is under MIT License. 
 
-You should find a copy of the license [here](https://github.com/Dustin-Jiang/genshin-player-indicator/blob/maste/LICENSE).
+You should find a copy of the license [here](https://github.com/Dustin-Jiang/genshin-player-indicator/blob/master/LICENSE).
 
 Copyright (c) 2022 xulaupuz, Dustin Jiang
