@@ -8,9 +8,11 @@ gitSemverTags(async (err, gitTags) => {
     encoding: "utf-8",
   })
   let packageInfo = JSON.parse(data)
-  let npmLatestVersion = packageInfo.version;
+  let npmLatestVersion: string = packageInfo["version"]
   // Make `v0.6.0` to `0.6.0`
-  let gitLatestVersion = gitTags[0].substring(1);
+  let gitLatestVersion = "0.0.0"
+  if (gitTags && typeof gitTags[0] === "string")
+    gitLatestVersion = gitTags[0].substring(1)
   console.log(`Git: ${gitLatestVersion}`);
   console.log(`NPM: ${npmLatestVersion}`);
 
