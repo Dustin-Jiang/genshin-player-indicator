@@ -1,10 +1,33 @@
 import { GmFunctions, RunAt, UserScript } from "./UserScript";
 import build from "./build";
 import gitSemverTags = require("git-semver-tags");
+import { readFile, writeFile } from "fs/promises";
 
-gitSemverTags((err, tags) => {
+gitSemverTags(async (err, gitTags) => {
+  let data = await readFile("package.json", {
+    encoding: "utf-8",
+  })
+  let packageInfo = JSON.parse(data)
+  let npmLatestVersion = packageInfo.version;
   // Make `v0.6.0` to `0.6.0`
-  let latestVersion = tags[0].substring(1);
+  let gitLatestVersion = gitTags[0].substring(1);
+  console.log(`Git: ${gitLatestVersion}`);
+  console.log(`NPM: ${npmLatestVersion}`);
+
+  let latestVersion = npmLatestVersion;
+  if (gitLatestVersion && gitLatestVersion > npmLatestVersion) {
+    latestVersion = gitLatestVersion;
+    packageInfo["version"] = gitLatestVersion
+    writeFile(
+      "package.json",
+      JSON.stringify(packageInfo, null, 2)
+    ).then(
+      () => {},
+      (err) => {
+        throw err;
+      }
+    );
+  }
   const script: UserScript = {
     name: "原神玩家指示器 - 改",
     namespace: "https://github.com/Dustin-Jiang/genshin-player-indicator",

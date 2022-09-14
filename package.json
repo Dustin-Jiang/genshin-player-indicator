@@ -1,6 +1,6 @@
 {
   "name": "genshin-player-indicator",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Indicate Genshin Impact players in Bilibili",
   "main": "index.js",
   "repository": "https://github.com/Dustin-Jiang/genshin-player-indicator.git",
