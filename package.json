@@ -33,9 +33,7 @@
   },
   "scripts": {
     "build": "webpack",
-    "build:header": "ts-node header/index.ts",
-    "sync": "webpack --watch --sync yes",
-    "start:server": "node server.js"
+    "build:header": "ts-node header/index.ts"
   },
   "browserslist": [
     "> 1%",
