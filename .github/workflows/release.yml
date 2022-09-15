@@ -21,24 +21,24 @@ jobs:
         yarn build:header
         yarn build
     
-    - name: create release
-      id: create-release
+    - name: Create release on tag
+      id: create_release
       uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        with:
-          tag_name: '${{ github.ref }}'
-          release_name: 'Release ${{ github.ref }}'
-          body: Release created by GitHub action on each tag.
-          draft: false
-          prerelease: false
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        tag_name: '${{ github.ref }}'
+        release_name: 'Release ${{ github.ref }}'
+        body: Release created by GitHub action on each tag.
+        draft: false
+        prerelease: false
           
-      - name: Upload release assets
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        with:
-          upload_url: '${{ steps.create_release.outputs.upload_url }}'
-          asset_path: ./dist/genshin-player-indicator.userscript.js
-          asset_name: genshin-player-indicator.userscript.js
-          asset_content_type: text/javascript
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+      with:
+        upload_url: '${{ steps.create_release.outputs.upload_url }}'
+        asset_path: ./dist/genshin-player-indicator.userscript.js
+        asset_name: genshin-player-indicator.userscript.js
+        asset_content_type: text/javascript
