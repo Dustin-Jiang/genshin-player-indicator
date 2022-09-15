@@ -9,7 +9,7 @@ const fs = require('fs')
 const header_path = 'dist/app_header.js'
 
 let output = {
-    filename: 'genshin-player-indicator.userscript.js',
+    filename: 'genshin-player-indicator.user.js',
     path: path.resolve(__dirname, 'dist')
 }
 
