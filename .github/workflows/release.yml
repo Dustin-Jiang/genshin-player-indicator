@@ -20,6 +20,7 @@ jobs:
         yarn install
         yarn build:header
         yarn build
+        yarn build:release
     
     - name: Create release on tag
       id: create_release
