@@ -10,7 +10,7 @@ const header_path = 'dist/app_header.js';
 
 output = {
   filename: 'genshin-player-indicator.user.js',
-  path: path.resolve(__dirname, "dist")
+  path: path.resolve(__dirname)
 };
 
 
@@ -43,7 +43,6 @@ module.exports = async () => {
     plugins: [
       new FriendlyErrorsWebpackPlugin(),
       new CheckerPlugin(),
-      new TerserPlugin(),
       new BannerPlugin({
         banner: header,
         raw: true
