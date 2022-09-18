@@ -15,6 +15,16 @@ export type PlayerKeys = typeof PLAYER_KEYS[number] //TODO: | "arknights"
 // 实现
 import { Theme, getIndicator } from "./assets/config"
 import * as _ from "lodash"
+import { getUserActivityList, getUserSubscribeList } from "./utils/api";
+import factoryPluginGenshinImpact from "./plugins/genshinImpact";
+import { IUserInfo, Plugin } from "./plugins";
+
+const PLUGINS: {
+  [k: string]: (info: IUserInfo) => Plugin
+} = {
+  "genshin": factoryPluginGenshinImpact
+}
+
 interface INewVersionUser extends HTMLElement {
   dataset: {
     userId: UserId;
@@ -41,8 +51,6 @@ type HTMLCode = string;
 
 type UserInfo = Map<PlayerKeys, boolean>
 
-const blog =
-  "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?&host_mid=";
 
 export default class App {
   unknown: Set<UserId> = new Set();
@@ -95,7 +103,7 @@ export default class App {
     let check = setInterval(() => {
       let commentlist = this.getCommentList();
       if (commentlist.size !== 0) {
-        commentlist.forEach((user: INewVersionUser | IOldVersionUser) => {
+        commentlist.forEach(async (user: INewVersionUser | IOldVersionUser) => {
           let pid = this.getPid(user);
 
           // 检查是否为玩家
@@ -112,55 +120,46 @@ export default class App {
               }
             }
             return;
-          } else if (this.notPlayer.has(pid)) {
-            // do nothing
-            return;
           }
 
           // 未知用户，开始查找
           this.unknown.add(pid);
-          let blogurl = blog + pid;
-          GM_xmlhttpRequest({
-            method: "GET",
-            url: blogurl,
-            data: "",
-            headers: {
-              "user-agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
-            },
-            onload: (res) => {
-              if (res.status === 200) {
-                let response = JSON.stringify(JSON.parse(res.response).data);
-                let userInfo = new Map(
-                  _.zip(
-                    PLAYER_KEYS,
-                    _.fill(Array(PLAYER_KEYS.length), false)
-                  ) as [PlayerKeys, boolean][]
-                );
-                this.unknown.delete(pid);
+          let activityList = await getUserActivityList(pid)
+          let subscribeList = await getUserSubscribeList(pid)
 
-                // Flag确定是否为玩家
-                let haveChange = false
-                for (let type of PLAYER_KEYS) {
-                  let keyword = DEFAULT_PLAYER_LIST[type]["keyword"];
-                  if (response.includes(keyword)) {
-                    haveChange = true
-                    userInfo.set(type, true)
-                  }
-                }
-                if (haveChange) {
-                  this.isPlayer.set(pid, userInfo)
-                } else {
-                  this.notPlayer.add(pid)
-                }
-              } else {
-                console.log("失败");
-                console.log(res);
-              }
-            },
-          });
-        });
+          let userInfo = new Map(
+            _.zip(
+              PLAYER_KEYS,
+              _.fill(Array(PLAYER_KEYS.length), false)
+            ) as [PlayerKeys, boolean][]
+          );
+          this.unknown.delete(pid);
+
+          // Flag确定是否为玩家
+          let haveChange = false
+
+          // 逐个插件查找
+          for (let type of PLAYER_KEYS) {
+            let plugin = PLUGINS[type]({
+              uid: pid,
+              activityList,
+              subscribeList
+            })
+            let checkResult = plugin.check()
+            if (checkResult) {
+              userInfo.set(type, checkResult)
+              haveChange = true
+            }
+          }
+          if (haveChange) {
+            this.isPlayer.set(pid, userInfo)
+          }
+          // TODO: 以后将下面去掉，notPlayer已被弃用
+          else {
+            this.notPlayer.add(pid)
+          }
+        })
       }
-    }, 4000);
+    })
   }
 }

@@ -6,24 +6,21 @@ import { readFile, writeFile } from "fs/promises";
 gitSemverTags(async (err, gitTags) => {
   let data = await readFile("package.json", {
     encoding: "utf-8",
-  })
-  let packageInfo = JSON.parse(data)
-  let npmLatestVersion: string = packageInfo["version"]
+  });
+  let packageInfo = JSON.parse(data);
+  let npmLatestVersion: string = packageInfo["version"];
   // Make `v0.6.0` to `0.6.0`
-  let gitLatestVersion = "0.0.0"
+  let gitLatestVersion = "0.0.0";
   if (gitTags && typeof gitTags[0] === "string")
-    gitLatestVersion = gitTags[0].substring(1)
+    gitLatestVersion = gitTags[0].substring(1);
   console.log(`Git: ${gitLatestVersion}`);
   console.log(`NPM: ${npmLatestVersion}`);
 
   let latestVersion = npmLatestVersion;
   if (gitLatestVersion && gitLatestVersion > npmLatestVersion) {
     latestVersion = gitLatestVersion;
-    packageInfo["version"] = gitLatestVersion
-    writeFile(
-      "package.json",
-      JSON.stringify(packageInfo, null, 2)
-    ).then(
+    packageInfo["version"] = gitLatestVersion;
+    writeFile("package.json", JSON.stringify(packageInfo, null, 2)).then(
       () => {},
       (err) => {
         throw err;
@@ -41,6 +38,7 @@ gitSemverTags(async (err, gitTags) => {
     grants: [GmFunctions.xmlhttpRequest],
     license: "MIT",
     runAt: RunAt.document_end,
+    connect: ["api.bilibili.com"],
   };
 
   build(script, "app_header.js");
