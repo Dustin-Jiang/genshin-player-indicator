@@ -12,7 +12,6 @@
     "@types/git-semver-tags": "^4.1.1",
     "@types/lodash": "^4.14.185",
     "@types/node": "^16.9.1",
-    "@types/tampermonkey": "^4.0.5",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.2.5",
     "core-js": "^3.23.3",
