@@ -3,19 +3,20 @@ import GM_xmlhttpRequestPromise from "./GM_xmlHttpRequest";
 type Url = string
 
 enum DYNAMIC_TYPE {
-  "DYNAMIC_TYPE_FORWARD",
-  "DYNAMIC_TYPE_DRAW",
-  "DYNAMIC_TYPE_WORD",
-  "DYNAMIC_TYPE_AV",
+  DYNAMIC_TYPE_FORWARD = "DYNAMIC_TYPE_FORWARD",
+  DYNAMIC_TYPE_DRAW = "DYNAMIC_TYPE_DRAW",
+  DYNAMIC_TYPE_WORD = "DYNAMIC_TYPE_WORD",
+  DYNAMIC_TYPE_AV = "DYNAMIC_TYPE_AV",
 };
 
 enum MAJOR_TYPE {
-  "MAJOR_TYPE_DRAW",
-  "MAJOR_TYPE_ARCHIVE",
-  "MAJOR_TYPE_LIVE_RCMD"
+  MAJOR_TYPE_DRAW = "MAJOR_TYPE_DRAW",
+  MAJOR_TYPE_ARCHIVE = "MAJOR_TYPE_ARCHIVE",
+  MAJOR_TYPE_ARTICLE = "MAJOR_TYPE_ARTICLE",
+  MAJOR_TYPE_LIVE_RCMD = "MAJOR_TYPE_LIVE_RCMD"
 }
 
-type User = {
+export type User = {
   mid: number,
   tag: number[] | null,
   special: number,
@@ -28,7 +29,7 @@ export type SubscribeList = User[]
 
 export type ActivityList = Activity[]
 
-type Activity = {
+export type Activity = {
   id_str: string;
   modules: {
     module_author: User;

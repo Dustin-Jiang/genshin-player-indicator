@@ -16,13 +16,13 @@ export type PlayerKeys = typeof PLAYER_KEYS[number] //TODO: | "arknights"
 import { Theme, getIndicator } from "./assets/config"
 import * as _ from "lodash"
 import { getUserActivityList, getUserSubscribeList } from "./utils/api";
-import factoryPluginGenshinImpact from "./plugins/genshinImpact";
+import PluginGenshinImpact from "./plugins/genshinImpact";
 import { IUserInfo, Plugin } from "./plugins";
 
 const PLUGINS: {
-  [k: string]: (info: IUserInfo) => Plugin
+  [k: string]: Plugin
 } = {
-  "genshin": factoryPluginGenshinImpact
+  "genshin": new PluginGenshinImpact()
 }
 
 interface INewVersionUser extends HTMLElement {
@@ -140,12 +140,12 @@ export default class App {
 
           // 逐个插件查找
           for (let type of PLAYER_KEYS) {
-            let plugin = PLUGINS[type]({
+            let plugin = PLUGINS[type]
+            let checkResult = plugin.check({
               uid: pid,
               activityList,
-              subscribeList
-            })
-            let checkResult = plugin.check()
+              subscribeList,
+            });
             if (checkResult) {
               userInfo.set(type, checkResult)
               haveChange = true
