@@ -21,8 +21,14 @@ jobs:
         yarn build:header
         yarn build
         yarn build:release
+
+    - name: Changelog CI
+      uses: saadmk11/changelog-ci@v1.0.0
+      id: changelogci
+      with:
+        release_version: ${{ github.ref }}
     
-    - name: Create release on tag
+    - name: Create release by tag
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -30,7 +36,7 @@ jobs:
       with:
         tag_name: '${{ github.ref }}'
         release_name: 'Release ${{ github.ref }}'
-        body: Release created by GitHub action on each tag.
+        body: "${{ steps.changelogci.outputs.changelog }}"
         draft: false
         prerelease: false
           
