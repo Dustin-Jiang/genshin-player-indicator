@@ -1,3 +1,5 @@
+import { GM_xmlhttpRequest } from "./tampermonkey";
+
 interface XHRDetails<CONTEXT_TYPE> {
   method?: "GET" | "HEAD" | "POST";
   url?: string;
