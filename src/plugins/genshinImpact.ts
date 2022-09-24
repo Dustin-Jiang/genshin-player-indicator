@@ -1,4 +1,5 @@
 import { Plugin, IUserInfo } from ".";
+import { getUserVideoList } from "../utils/api";
 
 export default class PluginGenshinImpact extends Plugin {
   name: "genshin";
@@ -127,7 +128,7 @@ export default class PluginGenshinImpact extends Plugin {
   constructor() {
     super();
   }
-  check(info: IUserInfo): boolean {
+  async check(info: IUserInfo): Promise<boolean> {
     this.subscribeList = info.subscribeList;
     this.activityList = info.activityList;
 
@@ -135,6 +136,7 @@ export default class PluginGenshinImpact extends Plugin {
 
     // 是否有原神Up
     let haveGenshinUp = false;
+    let haveVideoInActivity = false
 
     // 是否屏蔽关注列表
     let forbiddenFollowers = this.subscribeList.length === 0;
@@ -144,12 +146,6 @@ export default class PluginGenshinImpact extends Plugin {
         haveGenshinUp = true;
         sum += this.genshinUps.get(subscribe.mid.toString()).weight;
       }
-    }
-
-    // 没有屏蔽的情况下没有关注相关Up
-    // 优化 直接判断为非玩家
-    if (!haveGenshinUp && !forbiddenFollowers) {
-      return false
     }
 
     // 关注了相关Up 或者 屏蔽了关注列表
@@ -163,23 +159,29 @@ export default class PluginGenshinImpact extends Plugin {
         // 转发原神Up主的动态
         if (this.genshinUps.has(forwardedFromUser)) {
           sum += this.genshinUps.get(forwardedFromUser).weight;
+          if (forbiddenFollowers) {
+            sum += this.genshinUps.get(forwardedFromUser).weight * 0.6;
+          }
           continue;
         }
       } else {
         // 不是转发
         // 话题检测
         let activityTopic = activity.modules.module_dynamic.topic;
-        if (this.checkKeywords(activityTopic.name)) {
+        if (activityTopic !== null && this.checkKeywords(activityTopic.name)) {
           sum += 0.2;
         }
-        // 检测视频
+
+        // 视频
         if (
           activity.type === "DYNAMIC_TYPE_AV" &&
           activity.modules.module_dynamic.major.type === "MAJOR_TYPE_ARCHIVE"
         ) {
-          let { desc, title } = activity.modules.module_dynamic.major.archive;
-          if (this.checkKeywords(desc) || this.checkKeywords(title)) {
-            sum += 0.6;
+          haveVideoInActivity = true
+          let video = activity.modules.module_dynamic.major.archive
+          let { desc: description, title } = video;
+          if (this.checkKeywords(description) || this.checkKeywords(title)) {
+            sum += 0.8;
           }
         }
 
@@ -194,15 +196,33 @@ export default class PluginGenshinImpact extends Plugin {
             if (this.activityList.length < 10) {
               // 动态不多
               // 宁杀不放
-              return true
-            }
-            else {
+              return true;
+            } else {
               // 动态多
-              sum += 0.4
+              sum += 0.4;
             }
           }
         }
       }
+    }
+
+    // 防止风控
+    // 在确认动态列表里没有发布视频动态后再拉取视频信息
+    if (!haveVideoInActivity) {
+      this.videoList = await getUserVideoList(info.uid)
+      // 检测视频
+      for (let video of this.videoList) {
+        let { description, title } = video;
+        if (this.checkKeywords(description) || this.checkKeywords(title)) {
+          sum += 0.8;
+        }
+      }
+    }
+
+    // 如果屏蔽了关注列表，适当加权
+    // 为原权重的1.7倍
+    if (forbiddenFollowers) {
+      sum *= 1.7;
     }
 
     return sum >= 1;
@@ -213,7 +233,7 @@ export default class PluginGenshinImpact extends Plugin {
     targetTimes = targetTimes ? targetTimes : 1;
 
     for (let keyword of this.keywords) {
-      if (payload.indexOf(keyword)) {
+      if (payload.indexOf(keyword) !== -1) {
         targetTimes -= 1;
       }
       if (targetTimes === 0) {

@@ -1,13 +1,13 @@
 import { PlayerKeys } from "../app";
-import { ActivityList, SubscribeList } from "../utils/api";
+import { ActivityList, SubscribeList, VideoList } from "../utils/api";
 
 export abstract class Plugin {
   name: PlayerKeys;
   activityList: ActivityList;
   subscribeList: SubscribeList;
-  private weight: number;
+  videoList: VideoList
   constructor() {}
-  check(info: IUserInfo) {
+  async check(info: IUserInfo) {
     return false;
   }
 }

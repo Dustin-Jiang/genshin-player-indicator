@@ -82,10 +82,10 @@ export default class App {
   getCommentList() {
     if (this.isNewVersionBilibili) {
       let userList: Set<INewVersionUser> = new Set();
-      for (let i of document.getElementsByClassName("user-name")) {
+      for (let i of document.querySelectorAll("div#comment .user-name")) {
         userList.add(i as INewVersionUser);
       }
-      for (let i of document.getElementsByClassName("sub-user-name")) {
+      for (let i of document.querySelectorAll("div#comment .sub-user-name")) {
         userList.add(i as INewVersionUser);
       }
       return userList;
@@ -121,9 +121,16 @@ export default class App {
             }
             return;
           }
+          // 已缓存，确认非玩家
+          if (this.notPlayer.has(pid)) {
+            return ;
+          }
 
           // 未知用户，开始查找
           this.unknown.add(pid);
+
+          // 拉取用户信息
+          // 视频信息容易被风控，在插件中条件拉取
           let activityList = await getUserActivityList(pid)
           let subscribeList = await getUserSubscribeList(pid)
 
@@ -144,22 +151,21 @@ export default class App {
             let checkResult = plugin.check({
               uid: pid,
               activityList,
-              subscribeList,
+              subscribeList
             });
             if (checkResult) {
-              userInfo.set(type, checkResult)
+              userInfo.set(type, await checkResult)
               haveChange = true
             }
           }
           if (haveChange) {
             this.isPlayer.set(pid, userInfo)
           }
-          // TODO: 以后将下面去掉，notPlayer已被弃用
           else {
             this.notPlayer.add(pid)
           }
         })
       }
-    })
+    }, 4000)
   }
 }

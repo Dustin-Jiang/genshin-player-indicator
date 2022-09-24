@@ -26,7 +26,9 @@ export default function GM_xmlhttpRequestPromise<CONTEXT_TYPE>(
   details: XHRDetails<CONTEXT_TYPE>
 ): Promise<CONTEXT_TYPE> {
   return new Promise((resolve, reject) => {
-    details.onload = resolve;
+    details.onload = (data) => {
+      resolve(data.response)
+    }
     GM_xmlhttpRequest.call(null, details);
   });
 }
