@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name            原神玩家指示器 - 改
 // @namespace       https://github.com/Dustin-Jiang/genshin-player-indicator
-// @version         0.6.1
+// @version         0.6.2
 // @author          xulaupuz, Dustin Jiang
 // @description     B站评论区自动标注原神玩家，依据是动态里是否有原神相关内容
 // @icon            https://static.hdslb.com/images/favicon.ico
 // @match           https://www.bilibili.com/video/*
+// @connect         api.bilibili.com
 // @run-at          document-end
 // @license         MIT
 // @grant           GM_xmlhttpRequest
@@ -136,6 +137,38 @@ const app_1 = __webpack_require__(1);
 "use strict";
 
 
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -155,7 +188,13 @@ const config_1 = __webpack_require__(2);
 
 const _ = __webpack_require__(3);
 
-const blog = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?&host_mid=";
+const api_1 = __webpack_require__(6);
+
+const genshinImpact_1 = __webpack_require__(8);
+
+const PLUGINS = {
+  "genshin": new genshinImpact_1.default()
+};
 
 class App {
   constructor(theme) {
@@ -181,11 +220,11 @@ class App {
     if (this.isNewVersionBilibili) {
       let userList = new Set();
 
-      for (let i of document.getElementsByClassName("user-name")) {
+      for (let i of document.querySelectorAll("div#comment .user-name")) {
         userList.add(i);
       }
 
-      for (let i of document.getElementsByClassName("sub-user-name")) {
+      for (let i of document.querySelectorAll("div#comment .sub-user-name")) {
         userList.add(i);
       }
 
@@ -207,7 +246,7 @@ class App {
       let commentlist = this.getCommentList();
 
       if (commentlist.size !== 0) {
-        commentlist.forEach(user => {
+        commentlist.forEach(user => __awaiter(this, void 0, void 0, function* () {
           let pid = this.getPid(user); // 检查是否为玩家
           // 已缓存，确认是玩家
 
@@ -222,50 +261,44 @@ class App {
             }
 
             return;
-          } else if (this.notPlayer.has(pid)) {
-            // do nothing
+          } // 已缓存，确认非玩家
+
+
+          if (this.notPlayer.has(pid)) {
             return;
           } // 未知用户，开始查找
 
 
-          this.unknown.add(pid);
-          let blogurl = blog + pid;
-          GM_xmlhttpRequest({
-            method: "GET",
-            url: blogurl,
-            data: "",
-            headers: {
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
-            },
-            onload: res => {
-              if (res.status === 200) {
-                let response = JSON.stringify(JSON.parse(res.response).data);
-                let userInfo = new Map(_.zip(PLAYER_KEYS, _.fill(Array(PLAYER_KEYS.length), false)));
-                this.unknown.delete(pid); // Flag确定是否为玩家
+          this.unknown.add(pid); // 拉取用户信息
+          // 视频信息容易被风控，在插件中条件拉取
 
-                let haveChange = false;
+          let activityList = yield api_1.getUserActivityList(pid);
+          let subscribeList = yield api_1.getUserSubscribeList(pid);
+          let userInfo = new Map(_.zip(PLAYER_KEYS, _.fill(Array(PLAYER_KEYS.length), false)));
+          this.unknown.delete(pid); // Flag确定是否为玩家
 
-                for (let type of PLAYER_KEYS) {
-                  let keyword = exports.DEFAULT_PLAYER_LIST[type]["keyword"];
+          let haveChange = false; // 逐个插件查找
 
-                  if (response.includes(keyword)) {
-                    haveChange = true;
-                    userInfo.set(type, true);
-                  }
-                }
+          for (let type of PLAYER_KEYS) {
+            let plugin = PLUGINS[type];
+            let checkResult = plugin.check({
+              uid: pid,
+              activityList,
+              subscribeList
+            });
 
-                if (haveChange) {
-                  this.isPlayer.set(pid, userInfo);
-                } else {
-                  this.notPlayer.add(pid);
-                }
-              } else {
-                console.log("失败");
-                console.log(res);
-              }
+            if (checkResult) {
+              userInfo.set(type, yield checkResult);
+              haveChange = true;
             }
-          });
-        });
+          }
+
+          if (haveChange) {
+            this.isPlayer.set(pid, userInfo);
+          } else {
+            this.notPlayer.add(pid);
+          }
+        }));
       }
     }, 4000);
   }
@@ -17585,6 +17618,399 @@ module.exports = function(module) {
 	return module;
 };
 
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUserVideoList = exports.getUserActivityList = exports.getUserSubscribeList = void 0;
+
+const GM_xmlhttpRequest_1 = __webpack_require__(7);
+
+var DYNAMIC_TYPE;
+
+(function (DYNAMIC_TYPE) {
+  DYNAMIC_TYPE["DYNAMIC_TYPE_FORWARD"] = "DYNAMIC_TYPE_FORWARD";
+  DYNAMIC_TYPE["DYNAMIC_TYPE_DRAW"] = "DYNAMIC_TYPE_DRAW";
+  DYNAMIC_TYPE["DYNAMIC_TYPE_WORD"] = "DYNAMIC_TYPE_WORD";
+  DYNAMIC_TYPE["DYNAMIC_TYPE_AV"] = "DYNAMIC_TYPE_AV";
+})(DYNAMIC_TYPE || (DYNAMIC_TYPE = {}));
+
+;
+var MAJOR_TYPE;
+
+(function (MAJOR_TYPE) {
+  MAJOR_TYPE["MAJOR_TYPE_DRAW"] = "MAJOR_TYPE_DRAW";
+  MAJOR_TYPE["MAJOR_TYPE_ARCHIVE"] = "MAJOR_TYPE_ARCHIVE";
+  MAJOR_TYPE["MAJOR_TYPE_ARTICLE"] = "MAJOR_TYPE_ARTICLE";
+  MAJOR_TYPE["MAJOR_TYPE_LIVE_RCMD"] = "MAJOR_TYPE_LIVE_RCMD";
+})(MAJOR_TYPE || (MAJOR_TYPE = {}));
+
+function getUserSubscribeList(uid) {
+  return __awaiter(this, void 0, void 0, function* () {
+    let subscribeUrl = `https://api.bilibili.com/x/relation/followings?vmid=${uid}`;
+    let response = yield getApi(subscribeUrl);
+    let result = JSON.parse(response); // 处理屏蔽
+
+    let parsed = result.code !== 22115 ? result.data.list : [];
+    return parsed;
+  });
+}
+
+exports.getUserSubscribeList = getUserSubscribeList;
+
+function getUserActivityList(uid) {
+  return __awaiter(this, void 0, void 0, function* () {
+    let activityUrl = `https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/space?&host_mid=${uid}`;
+    let response = yield getApi(activityUrl);
+    let result = JSON.parse(response).data.items;
+    return result;
+  });
+}
+
+exports.getUserActivityList = getUserActivityList;
+
+function getUserVideoList(uid) {
+  return __awaiter(this, void 0, void 0, function* () {
+    let videoUrl = `http://api.bilibili.com/x/space/arc/search?mid=${uid}`;
+    let response = yield getApi(videoUrl);
+    let result = JSON.parse(response); // 风控
+
+    return result.code !== -412 && result.data.list.vlist ? result.data.list.vlist : [];
+  });
+}
+
+exports.getUserVideoList = getUserVideoList;
+
+function getApi(url) {
+  return __awaiter(this, void 0, void 0, function* () {
+    return GM_xmlhttpRequest_1.default({
+      method: "GET",
+      url: url,
+      data: "",
+      headers: {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+      }
+    });
+  });
+}
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function GM_xmlhttpRequestPromise(details) {
+  return new Promise((resolve, reject) => {
+    details.onload = data => {
+      resolve(data.response);
+    };
+
+    GM_xmlhttpRequest.call(null, details);
+  });
+}
+
+exports.default = GM_xmlhttpRequestPromise;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const _1 = __webpack_require__(9);
+
+const api_1 = __webpack_require__(6);
+
+class PluginGenshinImpact extends _1.Plugin {
+  constructor() {
+    super();
+    this.keywords = ["提瓦特", "蒙德", "璃月", "稻妻", "须弥", "枫丹廷", "纳塔", "至冬国", "原神", "旅行者", "派蒙", "西风骑士团", "安柏", "丽莎", "凯亚", "芭芭拉", "迪卢克", "雷泽", "温迪", "可莉", "班尼特", "诺艾尔", "菲谢尔", "砂糖", "莫娜", "迪奥娜", "阿贝多", "罗莎莉亚", "优菈", "魈", "凝光", "香菱", "行秋", "重云", "刻晴", "七七", "钟离", "辛焱", "甘雨", "胡桃", "烟绯", "申鹤", "云堇", "夜兰", "神里绫华", "枫原万叶", "宵宫", "早柚", "雷电将军", "九条裟罗", "珊瑚宫心海", "托马", "荒泷一斗", "八重神子", "神里绫人", "久岐忍", "鹿野院平藏", "提纳里", "柯莱", "多莉", "赛诺", "妮露", "坎蒂丝", "埃尔海森", "迪希雅", "纳西妲", "达达利亚", "埃洛伊"];
+    this.genshinUps = new Map([["401742377", {
+      name: "原神",
+      weight: 0.7
+    }], ["1560041", {
+      name: "永恒的贝多芬",
+      weight: 0.15
+    }], ["321594763", {
+      name: "黑椒糖唯酢",
+      weight: 0.15
+    }], ["431073645", {
+      name: "你的影月月",
+      weight: 0.2
+    }], ["1773346", {
+      name: "莴苣某人",
+      weight: 0.2
+    }], ["7817472", {
+      name: "某声悠",
+      weight: 0.1
+    }], ["80304", {
+      name: "亚食人",
+      weight: 0.05
+    }]]);
+  }
+
+  check(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+      this.subscribeList = info.subscribeList;
+      this.activityList = info.activityList;
+      let sum = 0; // 是否有原神Up
+
+      let haveGenshinUp = false;
+      let haveVideoInActivity = false; // 是否屏蔽关注列表
+
+      let forbiddenFollowers = this.subscribeList.length === 0;
+
+      for (let subscribe of this.subscribeList) {
+        if (this.genshinUps.has(subscribe.mid.toString())) {
+          haveGenshinUp = true;
+          sum += this.genshinUps.get(subscribe.mid.toString()).weight;
+        }
+      } // 关注了相关Up 或者 屏蔽了关注列表
+
+
+      for (let activity of this.activityList) {
+        // 转发动态
+        if (activity.type === "DYNAMIC_TYPE_FORWARD") {
+          let forwardedActivity = activity.orig;
+          let forwardedFromUser = forwardedActivity.modules.module_author.mid.toString(); // 转发原神Up主的动态
+
+          if (this.genshinUps.has(forwardedFromUser)) {
+            sum += this.genshinUps.get(forwardedFromUser).weight;
+
+            if (forbiddenFollowers) {
+              sum += this.genshinUps.get(forwardedFromUser).weight * 0.6;
+            }
+
+            continue;
+          }
+        } else {
+          // 不是转发
+          // 话题检测
+          let activityTopic = activity.modules.module_dynamic.topic;
+
+          if (activityTopic !== null && this.checkKeywords(activityTopic.name)) {
+            sum += 0.2;
+          } // 视频
+
+
+          if (activity.type === "DYNAMIC_TYPE_AV" && activity.modules.module_dynamic.major.type === "MAJOR_TYPE_ARCHIVE") {
+            haveVideoInActivity = true;
+            let video = activity.modules.module_dynamic.major.archive;
+            let {
+              desc: description,
+              title
+            } = video;
+
+            if (this.checkKeywords(description) || this.checkKeywords(title)) {
+              sum += 0.8;
+            }
+          } // 动态
+
+
+          if (activity.type === "DYNAMIC_TYPE_DRAW" || activity.type === "DYNAMIC_TYPE_WORD") {
+            let text = activity.modules.module_dynamic.desc.text;
+
+            if (this.checkKeywords(text, 2)) {
+              // 确定有关键词
+              if (this.activityList.length < 10) {
+                // 动态不多
+                // 宁杀不放
+                return true;
+              } else {
+                // 动态多
+                sum += 0.4;
+              }
+            }
+          }
+        }
+      } // 防止风控
+      // 在确认动态列表里没有发布视频动态后再拉取视频信息
+
+
+      if (!haveVideoInActivity) {
+        this.videoList = yield api_1.getUserVideoList(info.uid); // 检测视频
+
+        for (let video of this.videoList) {
+          let {
+            description,
+            title
+          } = video;
+
+          if (this.checkKeywords(description) || this.checkKeywords(title)) {
+            sum += 0.8;
+          }
+        }
+      } // 如果屏蔽了关注列表，适当加权
+      // 为原权重的1.7倍
+
+
+      if (forbiddenFollowers) {
+        sum *= 1.7;
+      }
+
+      return sum >= 1;
+    });
+  }
+
+  checkKeywords(payload, targetTimes) {
+    // 查找次数，默认1个
+    targetTimes = targetTimes ? targetTimes : 1;
+
+    for (let keyword of this.keywords) {
+      if (payload.indexOf(keyword) !== -1) {
+        targetTimes -= 1;
+      }
+
+      if (targetTimes === 0) {
+        break;
+      }
+    }
+
+    return targetTimes === 0;
+  }
+
+}
+
+exports.default = PluginGenshinImpact;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Plugin = void 0;
+
+class Plugin {
+  constructor() {}
+
+  check(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+      return false;
+    });
+  }
+
+}
+
+exports.Plugin = Plugin;
 
 /***/ })
 /******/ ]);
