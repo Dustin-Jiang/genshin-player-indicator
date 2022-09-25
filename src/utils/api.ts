@@ -1,4 +1,4 @@
-import GM_xmlhttpRequestPromise from "./GM_xmlHttpRequest";
+import GM_xmlhttpRequestPromise from "./GM_xmlhttpRequest";
 
 type Url = string
 
