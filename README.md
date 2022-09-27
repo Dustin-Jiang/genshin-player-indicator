@@ -1,5 +1,7 @@
 # genshin-player-indicator
 
+[Greasy Fork 安装地址](https://greasyfork.org/scripts/451564)
+
 Bilibili 原神玩家指示器
 
 > 原作者 `xulaupuz`
@@ -15,7 +17,7 @@ Give Bilibili users who **might be** a `Genshin Impact` player an indicator for 
 ## To-Do
 
 - [ ] 支持自定义指示器 Support customized indicator
-- [ ] 更准确的判断逻辑 More precise check method
+- [x] 更准确的判断逻辑 More precise check method
 - [ ] 支持更多成分检测 More 'identity' check
 
 ## Licensing

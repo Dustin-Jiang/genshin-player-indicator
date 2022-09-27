@@ -14,6 +14,7 @@
     "@types/node": "^16.9.1",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.2.5",
+    "conventional-changelog-cli": "^2.2.2",
     "core-js": "^3.23.3",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "ts-loader": "^4.2.0",
@@ -29,7 +30,8 @@
   "scripts": {
     "build": "webpack",
     "build:header": "ts-node header/index.ts",
-    "build:release": "webpack --config ./webpack.config.release.js"
+    "build:release": "webpack --config ./webpack.config.release.js",
+    "build:changelog": "yarn run conventional-changelog -i CHANGELOG.md -s -p angular"
   },
   "browserslist": [
     "> 1%",
