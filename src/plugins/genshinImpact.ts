@@ -5,6 +5,11 @@ export default class PluginGenshinImpact extends Plugin {
   name: "genshin";
 
   private keywords = [
+    // 游戏术语
+    "二命",
+    "圣遗物",
+    "丘丘人",
+    // 游戏内地名
     "提瓦特",
     "蒙德",
     "璃月",
@@ -13,7 +18,11 @@ export default class PluginGenshinImpact extends Plugin {
     "枫丹廷",
     "纳塔",
     "至冬国",
+    // 其他
     "原神",
+    "米哈游",
+    "米忽悠",
+    // 角色
     "旅行者",
     "派蒙",
     "西风骑士团",
@@ -34,7 +43,6 @@ export default class PluginGenshinImpact extends Plugin {
     "阿贝多",
     "罗莎莉亚",
     "优菈",
-    "魈",
     "凝光",
     "香菱",
     "行秋",
@@ -50,16 +58,19 @@ export default class PluginGenshinImpact extends Plugin {
     "云堇",
     "夜兰",
     "神里绫华",
+    "绫华",
     "枫原万叶",
+    "万叶", // 简称
     "宵宫",
     "早柚",
     "雷电将军",
     "九条裟罗",
     "珊瑚宫心海",
-    "托马",
+    "心海", // 简称
     "荒泷一斗",
     "八重神子",
     "神里绫人",
+    "绫人", // 简称
     "久岐忍",
     "鹿野院平藏",
     "提纳里",
@@ -81,6 +92,13 @@ export default class PluginGenshinImpact extends Plugin {
         name: "原神",
         weight: 0.7,
       },
+    ],
+    [
+      "318432901",
+      {
+        name: "米哈游miHoYo",
+        weight: 0.25
+      }
     ],
     [
       "1560041",
