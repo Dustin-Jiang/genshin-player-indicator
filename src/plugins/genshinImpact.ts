@@ -84,7 +84,7 @@ export default class PluginGenshinImpact extends Plugin {
     "纳西妲",
     "达达利亚",
     "埃洛伊",
-  ]
+  ];
   private genshinUps = new Map([
     [
       "401742377",
@@ -97,8 +97,50 @@ export default class PluginGenshinImpact extends Plugin {
       "318432901",
       {
         name: "米哈游miHoYo",
-        weight: 0.25
-      }
+        weight: 0.25,
+      },
+    ],
+    [
+      "574115689",
+      {
+        name: "自由大野猪",
+        weight: 0.2,
+      },
+    ],
+    [
+      "9891270",
+      {
+        name: "久鑫",
+        weight: 0.15,
+      },
+    ],
+    [
+      "6935139",
+      {
+        name: "阿良良树Official",
+        weight: 0.2,
+      },
+    ],
+    [
+      "404439515",
+      {
+        name: "原神百晓生",
+        weight: 0.18,
+      },
+    ],
+    [
+      "7907806",
+      {
+        name: "万老板",
+        weight: 0.2,
+      },
+    ],
+    [
+      "163915159",
+      {
+        name: "棕鱼ZY",
+        weight: 0.1,
+      },
     ],
     [
       "1560041",
@@ -154,7 +196,7 @@ export default class PluginGenshinImpact extends Plugin {
 
     // 是否有原神Up
     let haveGenshinUp = false;
-    let haveVideoInActivity = false
+    let haveVideoInActivity = false;
 
     // 是否屏蔽关注列表
     let forbiddenFollowers = this.subscribeList.length === 0;
@@ -195,8 +237,8 @@ export default class PluginGenshinImpact extends Plugin {
           activity.type === "DYNAMIC_TYPE_AV" &&
           activity.modules.module_dynamic.major.type === "MAJOR_TYPE_ARCHIVE"
         ) {
-          haveVideoInActivity = true
-          let video = activity.modules.module_dynamic.major.archive
+          haveVideoInActivity = true;
+          let video = activity.modules.module_dynamic.major.archive;
           let { desc: description, title } = video;
           if (this.checkKeywords(description) || this.checkKeywords(title)) {
             sum += 0.8;
@@ -227,7 +269,7 @@ export default class PluginGenshinImpact extends Plugin {
     // 防止风控
     // 在确认动态列表里没有发布视频动态后再拉取视频信息
     if (!haveVideoInActivity) {
-      this.videoList = await getUserVideoList(info.uid)
+      this.videoList = await getUserVideoList(info.uid);
       // 检测视频
       for (let video of this.videoList) {
         let { description, title } = video;
