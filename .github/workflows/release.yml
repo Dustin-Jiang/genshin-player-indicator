@@ -49,3 +49,18 @@ jobs:
         asset_path: ./dist/genshin-player-indicator.user.js
         asset_name: genshin-player-indicator.user.js
         asset_content_type: text/javascript
+
+    - name: Commit build
+      id: commit
+      run: |
+        git config --local user.email github-actions[bot]@users.noreply.github.com
+        git config --local user.name github-actions[bot]
+        git config --global core.autocrlf true
+        git config --global core.safecrlf false
+        git commit -m "chores: build release version by CI" -a
+
+    - name: Git push
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
