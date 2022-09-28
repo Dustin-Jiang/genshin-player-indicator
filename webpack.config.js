@@ -43,7 +43,6 @@ module.exports = async () => {
     plugins: [
       new FriendlyErrorsWebpackPlugin(),
       new CheckerPlugin(),
-      new TerserPlugin(),
       new BannerPlugin({
         banner: header,
         raw: true

@@ -6,6 +6,10 @@ const DEFAULT_COLOR_LIST: IColorList = {
     bgColor: "rgb(57, 201, 236)",
     fgColor: "rgb(255, 255, 255)",
   },
+  arkNights: {
+    bgColor: "rgb(28, 34, 32)",
+    fgColor: "rgb(255, 255, 255)",
+  },
 };
 
 // 实现
