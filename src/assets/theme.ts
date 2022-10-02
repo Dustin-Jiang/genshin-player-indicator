@@ -14,7 +14,7 @@ const DEFAULT_COLOR_LIST: IColorList = {
 
 // 实现
 
-import { DEFAULT_PLAYER_LIST, IPlayerList, PlayerKeys } from "../app"
+import { DEFAULT_PLAYER_LIST, IPlayerList, PlayerKeys } from "../config"
 type Indicators = PlayerKeys
 export type HTMLCode = string
 type CSSCode = string

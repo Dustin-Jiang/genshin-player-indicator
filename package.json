@@ -25,6 +25,8 @@
   },
   "dependencies": {
     "git-semver-tags": "^4.1.1",
+    "jss": "^10.9.2",
+    "jss-preset-default": "^10.9.2",
     "lodash": "^4.17.21"
   },
   "scripts": {
