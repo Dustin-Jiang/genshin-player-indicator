@@ -1,4 +1,4 @@
-import { PlayerKeys } from "../app";
+import { PlayerKeys } from "../config";
 import { ActivityList, SubscribeList, VideoList } from "../utils/api";
 
 export abstract class Plugin {

@@ -1,35 +1,19 @@
-export const DEFAULT_PLAYER_LIST: IPlayerList = {
-  genshin: {
-    keyword: "原神",
-    nickname: "原神玩家",
-  },
-  arkNights: {
-    keyword: "明日方舟",
-    nickname: "方舟玩家"
-  }
-};
-
-const PLAYER_KEYS : ("genshin" | "arkNights")[] = [
-  "genshin",
-  "arkNights"
-]
-
-export type PlayerKeys = typeof PLAYER_KEYS[number]
-
-// 实现
-import { Theme, getIndicator } from "./assets/config"
+import {
+  DEFAULT_PLAYER_LIST,
+  PLAYER_KEYS,
+  IPlayerList,
+  PLUGINS,
+  PlayerKeys
+} from "./config";
+import {
+  Theme,
+  getIndicator
+} from "./assets/theme"
 import * as _ from "lodash"
-import { getUserActivityList, getUserSubscribeList } from "./utils/api";
-import PluginGenshinImpact from "./plugins/genshinImpact";
-import PluginArkNights from "./plugins/arkNights";
-import { Plugin } from "./plugins";
-
-const PLUGINS: {
-  [k: string]: Plugin;
-} = {
-  genshin: new PluginGenshinImpact(),
-  arkNights: new PluginArkNights(),
-};
+import {
+  getUserActivityList,
+  getUserSubscribeList
+} from "./utils/api";
 
 interface INewVersionUser extends HTMLElement {
   dataset: {
@@ -43,13 +27,6 @@ interface IOldVersionUser extends HTMLElement {
     "usercard-mid": UserId;
   };
   textContent: string;
-}
-
-export interface IPlayerList {
-  [k: string]: {
-    keyword: string;
-    nickname: string;
-  };
 }
 
 type UserId = string;
