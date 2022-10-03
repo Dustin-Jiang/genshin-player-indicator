@@ -1,6 +1,6 @@
 {
   "name": "genshin-player-indicator",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Indicate Genshin Impact players in Bilibili",
   "main": "index.js",
   "repository": "https://github.com/Dustin-Jiang/genshin-player-indicator.git",
@@ -31,7 +31,7 @@
     "build": "webpack",
     "build:header": "ts-node header/index.ts",
     "build:release": "webpack --config ./webpack.config.release.js",
-    "build:changelog": "yarn run conventional-changelog -i CHANGELOG.md -s -p angular"
+    "build:changelog": "yarn run conventional-changelog -i CHANGELOG.md -s -p angular -t release"
   },
   "browserslist": [
     "> 1%",

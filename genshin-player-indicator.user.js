@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            原神玩家指示器 - 改
 // @namespace       https://github.com/Dustin-Jiang/genshin-player-indicator
-// @version         0.6.2
+// @version         0.6.3
 // @author          xulaupuz, Dustin Jiang
 // @description     B站评论区自动标注原神玩家，依据是动态里是否有原神相关内容
 // @icon            https://static.hdslb.com/images/favicon.ico
@@ -177,12 +177,13 @@ exports.DEFAULT_PLAYER_LIST = {
   genshin: {
     keyword: "原神",
     nickname: "原神玩家"
+  },
+  arkNights: {
+    keyword: "明日方舟",
+    nickname: "方舟玩家"
   }
 };
-const PLAYER_KEYS = ["genshin"
-/*,
-"arknights"*/
-]; // 实现
+const PLAYER_KEYS = ["genshin", "arkNights"]; // 实现
 
 const config_1 = __webpack_require__(2);
 
@@ -192,8 +193,11 @@ const api_1 = __webpack_require__(6);
 
 const genshinImpact_1 = __webpack_require__(8);
 
+const arkNights_1 = __webpack_require__(10);
+
 const PLUGINS = {
-  "genshin": new genshinImpact_1.default()
+  genshin: new genshinImpact_1.default(),
+  arkNights: new arkNights_1.default()
 };
 
 class App {
@@ -324,6 +328,10 @@ const DEFAULT_STYLE = "padding: 1px 5px; font-size: 0.677rem; border-radius: 2px
 const DEFAULT_COLOR_LIST = {
   genshin: {
     bgColor: "rgb(57, 201, 236)",
+    fgColor: "rgb(255, 255, 255)"
+  },
+  arkNights: {
+    bgColor: "rgb(28, 34, 32)",
     fgColor: "rgb(255, 255, 255)"
   }
 }; // 实现
@@ -17806,10 +17814,35 @@ const api_1 = __webpack_require__(6);
 class PluginGenshinImpact extends _1.Plugin {
   constructor() {
     super();
-    this.keywords = ["提瓦特", "蒙德", "璃月", "稻妻", "须弥", "枫丹廷", "纳塔", "至冬国", "原神", "旅行者", "派蒙", "西风骑士团", "安柏", "丽莎", "凯亚", "芭芭拉", "迪卢克", "雷泽", "温迪", "可莉", "班尼特", "诺艾尔", "菲谢尔", "砂糖", "莫娜", "迪奥娜", "阿贝多", "罗莎莉亚", "优菈", "魈", "凝光", "香菱", "行秋", "重云", "刻晴", "七七", "钟离", "辛焱", "甘雨", "胡桃", "烟绯", "申鹤", "云堇", "夜兰", "神里绫华", "枫原万叶", "宵宫", "早柚", "雷电将军", "九条裟罗", "珊瑚宫心海", "托马", "荒泷一斗", "八重神子", "神里绫人", "久岐忍", "鹿野院平藏", "提纳里", "柯莱", "多莉", "赛诺", "妮露", "坎蒂丝", "埃尔海森", "迪希雅", "纳西妲", "达达利亚", "埃洛伊"];
+    this.keywords = [// 游戏术语
+    "二命", "圣遗物", "丘丘人", // 游戏内地名
+    "提瓦特", "蒙德", "璃月", "稻妻", "须弥", "枫丹廷", "纳塔", "至冬国", // 其他
+    "原神", "米哈游", "米忽悠", // 角色
+    "旅行者", "派蒙", "西风骑士团", "安柏", "丽莎", "凯亚", "芭芭拉", "迪卢克", "雷泽", "温迪", "可莉", "班尼特", "诺艾尔", "菲谢尔", "砂糖", "莫娜", "迪奥娜", "阿贝多", "罗莎莉亚", "优菈", "凝光", "香菱", "行秋", "重云", "刻晴", "七七", "钟离", "辛焱", "甘雨", "胡桃", "烟绯", "申鹤", "云堇", "夜兰", "神里绫华", "绫华", "枫原万叶", "万叶", "宵宫", "早柚", "雷电将军", "九条裟罗", "珊瑚宫心海", "心海", "荒泷一斗", "八重神子", "神里绫人", "绫人", "久岐忍", "鹿野院平藏", "提纳里", "柯莱", "多莉", "赛诺", "妮露", "坎蒂丝", "埃尔海森", "迪希雅", "纳西妲", "达达利亚", "埃洛伊"];
     this.genshinUps = new Map([["401742377", {
       name: "原神",
       weight: 0.7
+    }], ["318432901", {
+      name: "米哈游miHoYo",
+      weight: 0.25
+    }], ["574115689", {
+      name: "自由大野猪",
+      weight: 0.2
+    }], ["9891270", {
+      name: "久鑫",
+      weight: 0.15
+    }], ["6935139", {
+      name: "阿良良树Official",
+      weight: 0.2
+    }], ["404439515", {
+      name: "原神百晓生",
+      weight: 0.18
+    }], ["7907806", {
+      name: "万老板",
+      weight: 0.2
+    }], ["163915159", {
+      name: "棕鱼ZY",
+      weight: 0.1
     }], ["1560041", {
       name: "永恒的贝多芬",
       weight: 0.15
@@ -18011,6 +18044,233 @@ class Plugin {
 }
 
 exports.Plugin = Plugin;
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
+
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const _1 = __webpack_require__(9);
+
+const api_1 = __webpack_require__(6);
+
+class PluginArkNights extends _1.Plugin {
+  constructor() {
+    super();
+    this.keywords = [// 游戏术语
+    "黄票", "红票", "绿票", "白票", "蓝票", // 游戏内地名
+    "罗德岛", "乌萨斯", "企鹅物流", // 其他
+    "明日方舟", "刀客塔", "鹰角", "海猫", "法老", "抄作业", // 角色
+    "焰尾", "推进之王", "嵯峨", "风笛", "琴柳", "格拉尼", "野鬃", "凛冬", "贾维", "苇草", "夜半", "晓歌", "德克萨斯", "极境", "百炼嘉维尔", "耀骑士临光", "斯卡蒂", "赫拉格", "帕拉斯", "银灰", "棘刺", "玛恩纳", "史尔特尔", "艾丽妮", "阿米娅", "阿米驴", "炎客", "鞭刃", "龙舌兰", "铸铁", "战车", "柏喙", "赤冬", "拉普兰德", "幽灵鲨", "断崖", "星极", "燧石", "羽毛笔", "因陀罗", "布洛卡", "诗怀雅", "芙兰卡", "瑕光", "泥岩", "塞雷娅", "星熊", "号角", "森蚺", "拜松", "暮落", "暴雨", "闪击", "灰毫", "可颂", "极光", "临光", "石棉", "车尔尼", "灰烬", "迷迭香", "假日威龙陈", "鸿雪", "能天使", "阿噗噜派", "菲亚梅塔", "早露", "远牙", "空弦", "承曦格雷伊", "埃拉托", "寒芒克洛丝", "蓝毒", "慑砂", "熔泉", "普罗旺斯", "奥斯塔", "守林人", "陨星", "安哲拉", "送葬人", "艾雅法拉", "刻俄柏", "异客", "伊芙利特", "澄闪", "卡涅利安", "莫斯提马", "黑键", "炎狱炎熔", "星源", "至简", "耶拉", "特米米", "薄绿", "苦艾", "蜜蜡", "夜魔", "洛洛", "爱丽丝", "天火", "莱恩哈特", "惊蛰", "蚀清", "流明", "凯尔希", "凯爹", "闪灵", "夜莺", "濯尘芙蓉", "亚叶", "锡兰", "桑葚", "白面鸮", "微风", "蜜莓", "絮雨", "赫默", "华法琳", "图耶", "浊心斯卡蒂", "麦哲伦", "灵知", "铃兰", "安洁莉娜", "九色鹿", "巫恋", "海蒂", "梅尔", "月禾", "掠风", "格劳克斯", "但书", "真理", "稀音", "夏栎", "初雪", "歌蕾蒂娅", "归溟幽灵鲨", "傀影", "多萝西", "水月", "老鲤", "罗宾", "贝娜", "见行者", "雪雉", "霜华", "风丸", "绮良", "崖心", "卡夫卡", "食铁兽", "乌有", "狮蝎", "槐琥", "析兰"];
+    this.arkNightsUps = new Map([["161775300", {
+      name: "明日方舟",
+      weight: 0.7
+    }], ["1265652806", {
+      name: "明日方舟终末地",
+      weight: 0.5
+    }], ["53466", {
+      name: "海猫络合物",
+      weight: 1
+    }], ["13164144", {
+      name: "魔法Zc目录",
+      weight: 0.4
+    }], ["49631892", {
+      name: "月隐空夜",
+      weight: 0.4
+    }], ["3220335", {
+      name: "二色彩虹",
+      weight: 0.4
+    }], ["60400874", {
+      name: "巅峰计划",
+      weight: 0.4
+    }], ["298484", {
+      name: "小狼xf",
+      weight: 0.4
+    }], ["441449841", {
+      name: "莱茵实验组",
+      weight: 0.3
+    }], ["404224360", {
+      name: "黑蓑影卫攻略组",
+      weight: 0.25
+    }], ["267766441", {
+      name: "血狼破军",
+      weight: 0.25
+    }], ["20014678", {
+      name: "星霜初绽的天穹",
+      weight: 0.2
+    }], ["8412516", {
+      name: "罗德岛蜜饼工坊",
+      weight: 0.3
+    }], ["9253594", {
+      name: "拔旗",
+      weight: 0.28
+    }], ["2195452", {
+      name: "化学老施",
+      weight: 0.3
+    }]]);
+  }
+
+  check(info) {
+    return __awaiter(this, void 0, void 0, function* () {
+      this.subscribeList = info.subscribeList;
+      this.activityList = info.activityList;
+      let sum = 0; // 是否有方舟Up
+
+      let haveGenshinUp = false;
+      let haveVideoInActivity = false; // 是否屏蔽关注列表
+
+      let forbiddenFollowers = this.subscribeList.length === 0;
+
+      for (let subscribe of this.subscribeList) {
+        if (this.arkNightsUps.has(subscribe.mid.toString())) {
+          haveGenshinUp = true;
+          sum += this.arkNightsUps.get(subscribe.mid.toString()).weight;
+        }
+      } // 关注了相关Up 或者 屏蔽了关注列表
+
+
+      for (let activity of this.activityList) {
+        // 转发动态
+        if (activity.type === "DYNAMIC_TYPE_FORWARD") {
+          let forwardedActivity = activity.orig;
+          let forwardedFromUser = forwardedActivity.modules.module_author.mid.toString(); // 转发原神Up主的动态
+
+          if (this.arkNightsUps.has(forwardedFromUser)) {
+            sum += this.arkNightsUps.get(forwardedFromUser).weight;
+
+            if (forbiddenFollowers) {
+              sum += this.arkNightsUps.get(forwardedFromUser).weight * 0.6;
+            }
+
+            continue;
+          }
+        } else {
+          // 不是转发
+          // 话题检测
+          let activityTopic = activity.modules.module_dynamic.topic;
+
+          if (activityTopic !== null && this.checkKeywords(activityTopic.name)) {
+            sum += 0.2;
+          } // 视频
+
+
+          if (activity.type === "DYNAMIC_TYPE_AV" && activity.modules.module_dynamic.major.type === "MAJOR_TYPE_ARCHIVE") {
+            haveVideoInActivity = true;
+            let video = activity.modules.module_dynamic.major.archive;
+            let {
+              desc: description,
+              title
+            } = video;
+
+            if (this.checkKeywords(description, 2) || this.checkKeywords(title, 3)) {
+              sum += 0.8;
+            }
+          } // 动态
+
+
+          if (activity.type === "DYNAMIC_TYPE_DRAW" || activity.type === "DYNAMIC_TYPE_WORD") {
+            let text = activity.modules.module_dynamic.desc.text;
+
+            if (this.checkKeywords(text, 3)) {
+              // 确定有关键词
+              if (this.activityList.length < 10) {
+                // 动态不多
+                // 宁杀不放
+                return true;
+              } else {
+                // 动态多
+                sum += 0.4;
+              }
+            }
+          }
+        }
+      } // 防止风控
+      // 在确认动态列表里没有发布视频动态后再拉取视频信息
+
+
+      if (!haveVideoInActivity) {
+        this.videoList = yield api_1.getUserVideoList(info.uid); // 检测视频
+
+        for (let video of this.videoList) {
+          let {
+            description,
+            title
+          } = video;
+
+          if (this.checkKeywords(description, 2) || this.checkKeywords(title, 2)) {
+            sum += 0.8;
+          }
+        }
+      } // 如果屏蔽了关注列表，适当加权
+      // 为原权重的1.7倍
+
+
+      if (forbiddenFollowers) {
+        sum *= 1.7;
+      }
+
+      return sum >= 1;
+    });
+  }
+
+  checkKeywords(payload, targetTimes) {
+    // 查找次数，默认1个
+    targetTimes = targetTimes ? targetTimes : 1;
+
+    for (let keyword of this.keywords) {
+      if (payload.indexOf(keyword) !== -1) {
+        targetTimes -= 1;
+      }
+
+      if (targetTimes === 0) {
+        break;
+      }
+    }
+
+    return targetTimes === 0;
+  }
+
+}
+
+exports.default = PluginArkNights;
 
 /***/ })
 /******/ ]);
